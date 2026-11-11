@@ -1,0 +1,242 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>WorkflowIQ — Content Approval</title>
+<style>
+  :root{
+    --bg:#0b0f1a; --panel:#141a28; --panel2:#1b2234; --line:#242d42;
+    --ink:#eaeef8; --muted:#8b97b4; --brand:#8b5cf6; --brand2:#ec4899;
+    --pend:#fbbf24; --appr:#34d399; --pub:#60a5fa; --rej:#fb7185;
+    --ig:#ec4899; --li:#3b82f6; --tw:#38bdf8; --fb:#2563eb;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif}
+  a{color:inherit}
+  header{position:sticky;top:0;z-index:5;background:rgba(11,15,26,.9);backdrop-filter:blur(10px);
+    border-bottom:1px solid var(--line);padding:14px 22px;display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+  .mark{width:36px;height:36px;border-radius:10px;background:linear-gradient(135deg,var(--brand),var(--brand2));display:grid;place-items:center;flex:none}
+  header h1{font-size:17px;margin:0}
+  header .sub{font-size:12px;color:var(--muted);margin-top:1px}
+  .conn{margin-left:auto;display:flex;gap:7px;align-items:center;font-size:12px;color:var(--muted)}
+  .pf{width:24px;height:24px;border-radius:7px;display:grid;place-items:center;font-size:12px;font-weight:700;color:#fff}
+  main{padding:20px 22px;max-width:1200px;margin:0 auto}
+  .control{display:flex;gap:16px;flex-wrap:wrap;margin-bottom:18px}
+  .box{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:16px}
+  .create{flex:1;min-width:300px}
+  .create h3{margin:0 0 12px;font-size:14px}
+  .create .f{display:grid;gap:10px}
+  .toprow{display:flex;gap:8px}
+  .toprow input{flex:1}
+  input,select,textarea{font:inherit;font-size:14px;color:var(--ink);background:var(--bg);
+    border:1px solid var(--line);border-radius:10px;padding:10px 12px;width:100%;outline:none}
+  input:focus,select:focus{border-color:var(--brand)}
+  .suggest{flex:none;white-space:nowrap;border:1px solid var(--brand);background:var(--panel2);
+    color:var(--ink);border-radius:10px;padding:0 14px;font-size:13px;font-weight:600;cursor:pointer}
+  .suggest:disabled{opacity:.6;cursor:default}
+  .pfpick{display:flex;flex-wrap:wrap;gap:8px}
+  .pfpick label{display:inline-flex;align-items:center;gap:7px;font-size:13px;border:1px solid var(--line);
+    background:var(--bg);border-radius:999px;padding:7px 12px;cursor:pointer;color:var(--muted)}
+  .pfpick input{width:auto}
+  .pfpick label.on{border-color:var(--brand);color:var(--ink);background:var(--panel2)}
+  .gen{border:0;background:linear-gradient(135deg,var(--brand),var(--brand2));color:#fff;font-weight:700;
+    font-size:14px;padding:12px;border-radius:11px;cursor:pointer}
+  .gen:disabled{opacity:.6;cursor:default}
+  .kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;min-width:280px;flex:1}
+  @media(max-width:620px){.kpis{grid-template-columns:repeat(2,1fr)}}
+  .kpi{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:13px}
+  .kpi .n{font-size:24px;font-weight:700}
+  .kpi .l{font-size:12px;color:var(--muted);margin-top:2px}
+  .note{font-size:12.5px;color:var(--muted);background:rgba(52,211,153,.08);border:1px solid rgba(52,211,153,.2);
+    border-radius:10px;padding:10px 13px;margin-bottom:16px;display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+  .note .exp{margin-left:auto;color:var(--pub);font-weight:600;text-decoration:none;white-space:nowrap}
+  .board{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+  @media(max-width:900px){.board{grid-template-columns:1fr}}
+  .col{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:13px;min-height:120px}
+  .col h3{margin:0 0 12px;font-size:13px;display:flex;align-items:center;gap:8px}
+  .col h3 .cnt{margin-left:auto;font-size:12px;color:var(--muted);background:var(--panel2);padding:2px 9px;border-radius:999px}
+  .card{background:var(--panel2);border:1px solid var(--line);border-radius:11px;padding:13px;margin-bottom:11px}
+  .card .ptop{display:flex;align-items:center;gap:8px;margin-bottom:8px}
+  .pbadge{font-size:11px;font-weight:700;padding:3px 9px;border-radius:999px;color:#fff}
+  .card .topic{font-size:11.5px;color:var(--muted);margin-left:auto;text-align:right}
+  .shot{width:100%;aspect-ratio:1/1;object-fit:cover;border-radius:9px;margin-bottom:9px;background:var(--bg);
+    border:1px solid var(--line)}
+  .cap{font-size:13.5px;line-height:1.5;white-space:pre-wrap}
+  .tags{font-size:12.5px;color:var(--tw);margin-top:7px;word-break:break-word}
+  .imgp{font-size:11.5px;color:var(--muted);margin-top:7px;font-style:italic}
+  .acts{display:flex;gap:7px;margin-top:11px;flex-wrap:wrap}
+  .b{flex:1;min-width:58px;text-align:center;font-size:12.5px;font-weight:600;padding:8px;border-radius:9px;
+    cursor:pointer;border:1px solid var(--line);background:var(--bg);color:var(--ink)}
+  .b:disabled{opacity:.6;cursor:default}
+  .b.ok{background:var(--appr);border:0;color:#04291c}
+  .b.no{color:var(--rej);border-color:rgba(251,113,133,.4)}
+  .b.pub{background:var(--pub);border:0;color:#04223f}
+  .b.re{color:var(--brand);border-color:rgba(139,92,246,.5)}
+  .empty{color:var(--muted);font-size:12.5px;padding:10px 2px}
+  .dotc{width:9px;height:9px;border-radius:50%}
+</style>
+</head>
+<body>
+<header>
+  <span class="mark"><svg viewBox="0 0 24 24" width="21" height="21" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg></span>
+  <div><h1>WorkflowIQ</h1><div class="sub">AI content — you approve before anything goes live</div></div>
+  <div class="conn">Connected:
+    <span class="pf" style="background:var(--ig)">Ig</span>
+    <span class="pf" style="background:var(--li)">in</span>
+    <span class="pf" style="background:var(--tw)">X</span>
+    <span class="pf" style="background:var(--fb)">f</span>
+  </div>
+</header>
+
+<main>
+  <div class="control">
+    <div class="box create">
+      <h3>✨ Create posts with AI</h3>
+      <div class="f">
+        <div class="toprow">
+          <input id="topic" placeholder="Topic or product — or tap Suggest">
+          <button class="suggest" id="suggest" type="button">💡 Suggest idea</button>
+        </div>
+        <input id="brand" placeholder="Brand name (optional) — e.g. Ray's Dog Supplies">
+        <div class="pfpick" id="pfpick">
+          <label class="on"><input type="checkbox" value="Instagram" checked> Instagram</label>
+          <label><input type="checkbox" value="LinkedIn"> LinkedIn</label>
+          <label><input type="checkbox" value="Twitter"> Twitter/X</label>
+          <label><input type="checkbox" value="Facebook"> Facebook</label>
+        </div>
+        <select id="tone">
+          <option value="friendly">Friendly</option>
+          <option value="professional">Professional</option>
+          <option value="playful">Playful</option>
+          <option value="bold">Bold</option>
+          <option value="informative">Informative</option>
+        </select>
+        <button class="gen" id="gen" type="button">Generate drafts</button>
+        <span id="err" style="color:var(--rej);font-size:12.5px"></span>
+      </div>
+    </div>
+    <div class="kpis" id="kpis"></div>
+  </div>
+
+  <div class="note">🔒 <b>You're in control.</b> AI drafts the text and image — nothing is marked published until you approve it. (Auto-posting to each platform needs its official API.)
+    <a class="exp" href="/api/export.csv">⤓ Export to CSV (Excel)</a>
+  </div>
+
+  <div class="board">
+    <div class="col"><h3><span class="dotc" style="background:var(--pend)"></span> Pending approval <span class="cnt" id="c-pend">0</span></h3><div id="pend"></div></div>
+    <div class="col"><h3><span class="dotc" style="background:var(--appr)"></span> Approved <span class="cnt" id="c-appr">0</span></h3><div id="appr"></div></div>
+    <div class="col"><h3><span class="dotc" style="background:var(--pub)"></span> Published <span class="cnt" id="c-pub">0</span></h3><div id="pub"></div></div>
+  </div>
+</main>
+
+<script>
+const $ = (id) => document.getElementById(id);
+const PCOL = {Instagram:'var(--ig)',LinkedIn:'var(--li)',Twitter:'var(--tw)',Facebook:'var(--fb)'};
+function esc(t){const d=document.createElement('div');d.textContent=t==null?'':t;return d.innerHTML;}
+
+document.querySelectorAll('#pfpick label').forEach(l=>{
+  const cb=l.querySelector('input');
+  cb.addEventListener('change',()=>l.classList.toggle('on',cb.checked));
+});
+
+async function load(){
+  let posts, s;
+  try{
+    posts = (await (await fetch('/api/posts')).json()).posts;
+    s = await (await fetch('/api/stats')).json();
+  }catch{ return; }
+
+  $('kpis').innerHTML =
+    kpi(s.by_status.Pending,'Pending','var(--pend)')+
+    kpi(s.by_status.Approved,'Approved','var(--appr)')+
+    kpi(s.by_status.Published,'Published','var(--pub)')+
+    kpi(s.total,'Total','var(--muted)');
+
+  const cols={Pending:[],Approved:[],Published:[]};
+  posts.forEach(p=>{ if(cols[p.status]) cols[p.status].push(p); });
+  render('pend',cols.Pending,'pending'); $('c-pend').textContent=cols.Pending.length;
+  render('appr',cols.Approved,'approved'); $('c-appr').textContent=cols.Approved.length;
+  render('pub',cols.Published,'published'); $('c-pub').textContent=cols.Published.length;
+}
+function kpi(n,l,c){ return `<div class="kpi"><div class="n" style="color:${c}">${n}</div><div class="l">${l}</div></div>`; }
+
+function render(el,list,kind){
+  if(!list.length){ $(el).innerHTML='<div class="empty">Nothing here yet.</div>'; return; }
+  $(el).innerHTML = list.map(p=>{
+    let acts='';
+    if(kind==='pending') acts=`<button class="b ok" data-a="approve" data-id="${p.id}">Approve</button>
+      <button class="b re" data-a="regenerate" data-id="${p.id}">↻ New</button>
+      <button class="b" data-a="copy" data-id="${p.id}">Copy</button>
+      <button class="b no" data-a="reject" data-id="${p.id}">Reject</button>`;
+    else if(kind==='approved') acts=`<button class="b pub" data-a="publish" data-id="${p.id}">Mark published</button>
+      <button class="b" data-a="copy" data-id="${p.id}">Copy</button>
+      <button class="b" data-a="unapprove" data-id="${p.id}">Undo</button>`;
+    else acts=`<button class="b" data-a="copy" data-id="${p.id}">Copy</button>`;
+    const img = p.image_url
+      ? `<img class="shot" src="${esc(p.image_url)}" alt="" loading="lazy" onerror="this.style.display='none'">`
+      : '';
+    return `<div class="card" data-id="${p.id}">
+      <div class="ptop"><span class="pbadge" style="background:${PCOL[p.platform]||'#888'}">${esc(p.platform)}</span>
+        <span class="topic">${esc(p.topic)}</span></div>
+      ${img}
+      <div class="cap">${esc(p.caption)}</div>
+      ${p.hashtags?`<div class="tags">${esc(p.hashtags)}</div>`:''}
+      ${p.image_prompt?`<div class="imgp">🎨 ${esc(p.image_prompt)}</div>`:''}
+      <div class="acts">${acts}</div>
+    </div>`;
+  }).join('');
+}
+
+document.addEventListener('click', async (e)=>{
+  const b=e.target.closest('[data-a]'); if(!b) return;
+  const id=b.dataset.id, a=b.dataset.a;
+  if(a==='copy'){
+    const card=b.closest('.card');
+    const cap=card.querySelector('.cap').textContent;
+    const tags=card.querySelector('.tags')?card.querySelector('.tags').textContent:'';
+    navigator.clipboard.writeText((cap+'\n\n'+tags).trim());
+    b.textContent='Copied ✓'; setTimeout(()=>b.textContent='Copy',1200);
+    return;
+  }
+  b.disabled=true;
+  if(a==='regenerate'){ b.textContent='…';
+    await fetch('/api/regenerate',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({id})});
+  } else {
+    await fetch('/api/action',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({id,action:a})});
+  }
+  load();
+});
+
+$('suggest').addEventListener('click', async ()=>{
+  const btn=$('suggest'); const old=btn.textContent;
+  btn.disabled=true; btn.textContent='Thinking…';
+  try{
+    const d=await (await fetch('/api/suggest')).json();
+    if(d.idea){ $('topic').value=d.idea; $('err').textContent=''; }
+  }catch{}
+  btn.disabled=false; btn.textContent=old;
+});
+
+$('gen').addEventListener('click', async ()=>{
+  const topic=$('topic').value.trim();
+  const platforms=[...document.querySelectorAll('#pfpick input:checked')].map(c=>c.value);
+  if(!topic){ $('err').textContent='Enter a topic or tap Suggest.'; return; }
+  if(!platforms.length){ $('err').textContent='Pick at least one platform.'; return; }
+  $('err').textContent=''; $('gen').disabled=true; $('gen').textContent='Generating…';
+  try{
+    const res=await fetch('/api/generate',{method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({topic,brand:$('brand').value.trim(),tone:$('tone').value,platforms})});
+    const data=await res.json();
+    if(!res.ok) throw new Error(data.error||'Failed');
+    load();
+  }catch(err){ $('err').textContent=err.message; }
+  $('gen').disabled=false; $('gen').textContent='Generate drafts';
+});
+
+load();
+setInterval(load, 15000);
+</script>
+</body>
+</html>
